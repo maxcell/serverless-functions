@@ -111,10 +111,25 @@
 
     function Corgi({ corgi }) {
       const [boops, setBoops] = useState(corgi.boops);
+      const [booping, setBooping] = useState(false);
 
       const handleBoop = (event) => {
         event.preventDefault();
-        setBoops(boops + 1);
+        setBooping(true)
+        fetch('/.netlify/functions/add-boop', {
+          method: "POST",
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            corgi_id: event.target.dataset.id
+          })
+        })
+          .then(res => res.json())
+          .then((data) => {
+            setBoops(data.update_boops_by_pk.count)
+            setBooping(false)
+          })
       };
 
       return html`
@@ -128,8 +143,8 @@
               currently playing: <br />
               ${corgi.favoriteSong}
             </p>
-            <button onClick=${handleBoop} data-id="${corgi.id}">
-              Booped ${boops} Times
+            <button onClick=${handleBoop} data-id="${corgi.id}" disabled="${booping}">
+              ${booping ? "Hold up booping" : `Booped ${boops} Times`}
             </button>
           </div>
         `;
